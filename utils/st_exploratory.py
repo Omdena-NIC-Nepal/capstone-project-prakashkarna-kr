@@ -1,17 +1,24 @@
 import streamlit as st
 import matplotlib.pyplot as plt
 import seaborn as sns
-from utils.exploratory import get_basic_stats, get_correlation, get_time_series, get_distribution_data
+from utils.exploratory import (
+    get_basic_stats,
+    get_correlation,
+    get_time_series,
+    get_distribution_data,
+)
+
 
 def run_eda(df):
     st.subheader("Exploratory Data Analysis")
 
     # Show raw data
-    if st.checkbox("Show Raw Data"):
-        st.write(df)
+    if st.checkbox("Raw Data"):
+        with st.container(border=True):
+            st.write(df)
 
     # Show basic stats
-    if st.checkbox("Show Basic Statistics"):
+    if st.checkbox("Basic Statistics"):
         stats, missing = get_basic_stats(df)
         st.write("Summary Statistics:")
         st.dataframe(stats)
@@ -19,16 +26,21 @@ def run_eda(df):
         st.dataframe(missing)
 
     # Show correlation heatmap
-    if st.checkbox("Show Correlation Heatmap"):
-        corr = get_correlation(df)
-        fig, ax = plt.subplots(figsize=(10, 6))
-        sns.heatmap(corr, annot=True, cmap='coolwarm', ax=ax)
-        st.pyplot(fig)
+    if st.checkbox("Correlation Heatmap"):
+        with st.container(border=True):
+            corr = get_correlation(df)
+            fig, ax = plt.subplots(figsize=(10, 6))
+            sns.heatmap(corr, annot=True, cmap="coolwarm", ax=ax)
+            st.pyplot(fig)
 
     # Time Series Analysis
-    if st.checkbox("Show Time Series Analysis"):
-        date_col = st.selectbox("Select Date Column", df.columns, index= None)
-        target_col = st.selectbox("Select Target Column", df.select_dtypes(include='number').columns, index= None)
+    if st.checkbox("Time Series Analysis"):
+        date_col = st.selectbox("Select Date Column", df.columns, index=None)
+        target_col = st.selectbox(
+            "Select Target Column",
+            df.select_dtypes(include="number").columns,
+            index=None,
+        )
         TSA = st.button("GO", type="primary")
         if TSA == True:
             try:
@@ -40,10 +52,11 @@ def run_eda(df):
             except Exception as e:
                 st.error(f"Could not generate time series plot: {e}")
 
-
     # Distribution Analysis
-    if st.checkbox("Show Distribution Analysis"):
-        column = st.selectbox("Select Column for Distribution", df.select_dtypes(include='number').columns)
+    if st.checkbox("Distribution Analysis"):
+        column = st.selectbox(
+            "Select Column for Distribution", df.select_dtypes(include="number").columns
+        )
         data = get_distribution_data(df, column)
         fig, ax = plt.subplots()
         sns.histplot(data, kde=True, ax=ax)
