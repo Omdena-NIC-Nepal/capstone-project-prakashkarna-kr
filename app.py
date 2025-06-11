@@ -36,12 +36,14 @@ from utils.st_climate_text_analysis import run_climate_text_analysis
 def main():
 
     # set page configuration
-    st.set_page_config(page_title="climate trend predictor", layout="wide")
+    st.set_page_config(page_title="Climate Trend Predictor", layout="wide")
 
     # App title and description
     st.title("Climate Trend Analysis and Prediction")
+    st.divider()
 
     st.markdown("Analyse historical tempreature and predict trend")
+
 
     # side bar
 

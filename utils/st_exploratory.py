@@ -27,17 +27,18 @@ def run_eda(df):
 
     # Time Series Analysis
     if st.checkbox("Show Time Series Analysis"):
-        date_col = st.selectbox("Select Date Column", df.columns)
-        target_col = st.selectbox("Select Target Column", df.select_dtypes(include='number').columns)
-
-        try:
-            ts_df = get_time_series(df, date_col, target_col)
-            fig, ax = plt.subplots(figsize=(10, 5))
-            sns.lineplot(data=ts_df, x=date_col, y=target_col, ax=ax)
-            ax.set_title(f"{target_col} over {date_col}")
-            st.pyplot(fig)
-        except Exception as e:
-            st.error(f"Could not generate time series plot: {e}")
+        date_col = st.selectbox("Select Date Column", df.columns, index= None)
+        target_col = st.selectbox("Select Target Column", df.select_dtypes(include='number').columns, index= None)
+        TSA = st.button("GO", type="primary")
+        if TSA == True:
+            try:
+                ts_df = get_time_series(df, date_col, target_col)
+                fig, ax = plt.subplots(figsize=(10, 5))
+                sns.lineplot(data=ts_df, x=date_col, y=target_col, ax=ax)
+                ax.set_title(f"{target_col} over {date_col}")
+                st.pyplot(fig)
+            except Exception as e:
+                st.error(f"Could not generate time series plot: {e}")
 
 
     # Distribution Analysis
