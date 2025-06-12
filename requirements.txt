@@ -10,6 +10,7 @@ colorama==0.4.6
 contourpy==1.3.2
 cycler==0.12.1
 fonttools==4.57.0
+geopandas
 gitdb==4.0.12
 GitPython==3.1.44
 idna==3.10
@@ -31,6 +32,7 @@ pydeck==0.9.1
 pyparsing==3.2.3
 python-dateutil==2.9.0.post0
 pytz==2025.2
+rasterio
 referencing==0.36.2
 requests==2.32.3
 rpds-py==0.24.0

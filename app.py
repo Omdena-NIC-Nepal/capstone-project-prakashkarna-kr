@@ -42,7 +42,7 @@ def main():
     st.title("Climate Trend Analysis and Prediction")
     st.divider()
 
-    st.markdown("Analyse historical tempreature and predict trend")
+    #st.markdown("Analyse historical tempreature and predict trend")
 
 
     # side bar
