@@ -17,31 +17,47 @@ LOCAL_GOOGLE_CREDENTIALS_PATH = "google_credentials.json"
 def get_gspread_client():
     """Authenticates with Google Sheets API and returns a gspread client."""
     scopes = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
-    creds_dict = None
+    client = None # Initialize client to None
 
     try:
-        creds_dict = st.secrets["gcp_service_account"]
-        print(f"DEBUG: Attempting to use st.secrets['gcp_service_account']. Type: {type(creds_dict)}") 
-        client = gspread.service_account_from_dict(creds_dict, scopes=scopes)
-    except (AttributeError, KeyError): 
-        print("DEBUG: gcp_service_account not found in st.secrets, trying local file.") 
-        client = None 
-    except Exception as e: 
-        print(f"DEBUG: Error initializing client from st.secrets: {e}")
-        client = None
+        if hasattr(st, 'secrets') and st.secrets:
+            creds_dict = st.secrets.get("gcp_service_account") # Use .get() for safer access
+            if creds_dict:
+                print(f"DEBUG: Attempting to use st.secrets['gcp_service_account']. Type: {type(creds_dict)}")
+                client = gspread.service_account_from_dict(creds_dict, scopes=scopes)
+                print("DEBUG: Client initialized from st.secrets.")
+            else:
+                print("DEBUG: 'gcp_service_account' key not found in st.secrets.")
+        else:
+            print("DEBUG: st.secrets not available or empty, assuming local development or misconfiguration.")
+            
+    except Exception as e: # Catch any error during secrets processing or gspread init
+        print(f"DEBUG: Error initializing client from st.secrets: {e}. Will try local file.")
+        client = None # Ensure client is None if secrets method failed
 
-    if client is None: 
+    # Fallback to local JSON file (for local development)
+    if client is None: # Only try local file if client wasn't initialized from secrets
         if os.path.exists(LOCAL_GOOGLE_CREDENTIALS_PATH):
             print(f"DEBUG: Found local credentials at: {os.path.abspath(LOCAL_GOOGLE_CREDENTIALS_PATH)}")
-            client = gspread.service_account(filename=LOCAL_GOOGLE_CREDENTIALS_PATH, scopes=scopes)
+            try:
+                client = gspread.service_account(filename=LOCAL_GOOGLE_CREDENTIALS_PATH, scopes=scopes)
+                print("DEBUG: Client initialized from local file.")
+            except Exception as e:
+                print(f"DEBUG: Error initializing client from local file {LOCAL_GOOGLE_CREDENTIALS_PATH}: {e}")
+                st.error(f"Failed to initialize Google Sheets client from local file: {e}")
+                return None
         else:
-            st.error("Google Sheets credentials not found. Please configure them.")
+            # This error will be shown if neither secrets nor local file worked
+            st.error("Google Sheets credentials not found. Please configure them for deployment in .streamlit/secrets.toml or ensure 'google_credentials.json' is in the project root for local development.")
             return None
-
-    if client is None: 
-        st.error("Google Sheets credentials not found. Please configure them.")
+    
+    # If client is still None here, it means both methods failed.
+    if client is None:
+        st.error("Failed to initialize Google Sheets client through any method.")
         return None
+        
     return client
+
 
 @st.cache_data(ttl=600) # Cache data
 def read_all_feedback_data(_client, sheet_name, worksheet_name, refresh_trigger=None) -> pd.DataFrame | None:
