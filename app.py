@@ -38,9 +38,14 @@ def main():
     # set page configuration
     st.set_page_config(page_title="Climate Trend Predictor", layout="wide")
 
-    # App title and description
-    st.title("Climate Trend Analysis and Prediction")
-    st.divider()
+    col1, col2 = st.columns(2)
+
+    with col2:
+        # App title and description, right-aligned
+        st.markdown(
+            "<h1 style='text-align: right;'>Climate Trend Analysis and Prediction</h1>",
+            unsafe_allow_html=True,
+        )
 
     #st.markdown("Analyse historical tempreature and predict trend")
 
@@ -49,7 +54,7 @@ def main():
 
     st.sidebar.title("Navigation Page")
     page = st.sidebar.radio(
-        "Go to",
+        "Navigate to",
         [
             "EDA",
             "Feature Engineering",
@@ -61,27 +66,28 @@ def main():
 
     # if 'df' not in st.session_state:
     #     st.session_state.df = load_data()
+    
+    with col1:
+        # df = st.session_state.df
+        df = load_data()
+        try:
+            if page == "EDA":
+                run_eda(df)  # call EDA part
 
-    # df = st.session_state.df
-    df = load_data()
-    try:
-        if page == "EDA":
-            run_eda(df)  # call EDA part
+            elif page == "Feature Engineering":
+                df = run_feature_engineering(df)
 
-        elif page == "Feature Engineering":
-            df = run_feature_engineering(df)
+            elif page == "Model Training":
+                run_model_training(df)
 
-        elif page == "Model Training":
-            run_model_training(df)
+            elif page == "Model Evaluation":
+                run_model_evaluation(df)
 
-        elif page == "Model Evaluation":
-            run_model_evaluation(df)
+            else:
+                run_climate_text_analysis()
 
-        else:
-            run_climate_text_analysis()
-
-    except Exception as e:
-        st.error(f"An error occurred: {e}")
+        except Exception as e:
+            st.error(f"An error occurred: {e}")
 
 
 if __name__ == "__main__":
