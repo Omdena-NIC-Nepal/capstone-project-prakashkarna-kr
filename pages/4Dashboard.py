@@ -19,12 +19,26 @@ def get_gspread_client():
     scopes = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
     creds_dict = None
 
-    if hasattr(st, 'secrets') and "gcp_service_account" in st.secrets:
+    try:
         creds_dict = st.secrets["gcp_service_account"]
+        print(f"DEBUG: Attempting to use st.secrets['gcp_service_account']. Type: {type(creds_dict)}") 
         client = gspread.service_account_from_dict(creds_dict, scopes=scopes)
-    elif os.path.exists(LOCAL_GOOGLE_CREDENTIALS_PATH):
-        client = gspread.service_account(filename=LOCAL_GOOGLE_CREDENTIALS_PATH, scopes=scopes)
-    else:
+    except (AttributeError, KeyError): 
+        print("DEBUG: gcp_service_account not found in st.secrets, trying local file.") 
+        client = None 
+    except Exception as e: 
+        print(f"DEBUG: Error initializing client from st.secrets: {e}")
+        client = None
+
+    if client is None: 
+        if os.path.exists(LOCAL_GOOGLE_CREDENTIALS_PATH):
+            print(f"DEBUG: Found local credentials at: {os.path.abspath(LOCAL_GOOGLE_CREDENTIALS_PATH)}")
+            client = gspread.service_account(filename=LOCAL_GOOGLE_CREDENTIALS_PATH, scopes=scopes)
+        else:
+            st.error("Google Sheets credentials not found. Please configure them.")
+            return None
+
+    if client is None: 
         st.error("Google Sheets credentials not found. Please configure them.")
         return None
     return client

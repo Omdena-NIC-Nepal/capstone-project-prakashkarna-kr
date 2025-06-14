@@ -1,3 +1,5 @@
 # .gitignore
 google_credentials.json
+    .streamlit/secrets.toml
 # ... other entries
+```
