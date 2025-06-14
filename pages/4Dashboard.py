@@ -14,7 +14,6 @@ GOOGLE_SHEET_NAME = "Feedback_Capstone"
 GOOGLE_SHEET_WORKSHEET_NAME = "Sheet1"     
 LOCAL_GOOGLE_CREDENTIALS_PATH = "google_credentials.json"
 
-@st.cache_data(ttl=600) # Cache data for 10 minutes to avoid frequent API calls
 def get_gspread_client():
     """Authenticates with Google Sheets API and returns a gspread client."""
     scopes = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
@@ -22,11 +21,9 @@ def get_gspread_client():
 
     if hasattr(st, 'secrets') and "gcp_service_account" in st.secrets:
         creds_dict = st.secrets["gcp_service_account"]
-        credentials = Credentials.from_service_account_info(creds_dict, scopes=scopes)
-        client = gspread.Client(auth=credentials)
+        client = gspread.service_account_from_dict(creds_dict, scopes=scopes)
     elif os.path.exists(LOCAL_GOOGLE_CREDENTIALS_PATH):
-        credentials = Credentials.from_service_account_file(LOCAL_GOOGLE_CREDENTIALS_PATH, scopes=scopes)
-        client = gspread.Client(auth=credentials)
+        client = gspread.service_account(filename=LOCAL_GOOGLE_CREDENTIALS_PATH, scopes=scopes)
     else:
         st.error("Google Sheets credentials not found. Please configure them.")
         return None
@@ -41,7 +38,7 @@ def read_all_feedback_data(_client, sheet_name, worksheet_name, refresh_trigger=
         sheet = _client.open(sheet_name).worksheet(worksheet_name)
         data = sheet.get_all_records()  
         if not data:
-            return pd.DataFrame() # Return empty DataFrame
+            return pd.DataFrame() #
         df = pd.DataFrame(data)
         if 'Rating' in df.columns:
             df['Rating'] = pd.to_numeric(df['Rating'], errors='coerce')
